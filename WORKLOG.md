@@ -1,7 +1,7 @@
 # 📋 工作日志 — my-website
 
-> 最后更新：2026-06-24
-> 当前阶段：暗色模式 ✅ — 等待下一个功能需求
+> 最后更新：2026-06-25
+> 当前阶段：前端搜索界面 ✅（HTML+CSS+JS 全部完成） — 准备端到端测试
 >
 > 🌐 线上地址：https://my-website-two-fawn-12.vercel.app/
 > 📦 GitHub：https://github.com/Toblimer/my-website
@@ -52,6 +52,17 @@
   - 暗色：`bg=#1a1a2e text=#e2e8f0 primary=#60a5fa`
   - 刷新后：暗色保持，localStorage 读取正确
 
+### 2026-06-25 · Logos（开发 #6）
+- **产出**：前端 JS 交互逻辑（6 个模块按依赖顺序加载）
+- **文件**：
+  - `utils.js` — DOM 操作 + 防抖 + HTML 转义
+  - `api.js` — fetch 封装 + 5 分钟内存缓存
+  - `search.js` — 表单提交 + 重试 + 加载更多 + 4 状态切换
+  - `gallery.js` — 图片卡片渲染 + lazy loading + 加载更多按钮
+  - `modal.js` — 弹窗打开/关闭 + 大图预加载 + ESC 关闭 + 点击遮罩关闭
+  - `main.js` — 保留暗色模式全部逻辑 + `window.App` 状态初始化 + URL 参数自动搜索
+- **Commit**：待推送
+
 ---
 
 ## 功能清单
@@ -62,6 +73,9 @@
 | 📦 GitHub 仓库 | ✅ |
 | 🌐 Vercel 部署 | ✅ |
 | 🌙 暗色模式切换 | ✅ |
+| 🤖 AI 图片检索 API（后端） | ✅ |
+| 🖼 前端搜索界面（HTML + CSS） | ✅ |
+| 🖼 前端交互逻辑（JS） | ✅ |
 
 ## 项目当前状态
 
@@ -70,12 +84,13 @@
 | 本地开发 | ✅ |
 | GitHub | ✅ `Toblimer/my-website` |
 | 线上部署 | ✅ `my-website-two-fawn-12.vercel.app` |
-| 技术栈 | 纯 HTML/CSS/JS，零依赖 |
+| 技术栈 | 纯 HTML/CSS/JS + Vercel Serverless Function |
 | 分支 | `main` |
-| Commit 数 | 4 |
+| Commit 数 | 4 → 7（待推送） |
 
 ---
 
 ## 下一步
-- 等待用户提出新功能需求
-- 可考虑：个人介绍页、作品集、导航菜单、动画效果等
+- 在 Vercel 配置环境变量（PEXELS_API_KEY / PIXABAY_API_KEY / DEEPSEEK_API_KEY）
+- `git push` 推送新代码到 GitHub 触发自动部署
+- 端到端测试：访问线上地址验证搜索流程
