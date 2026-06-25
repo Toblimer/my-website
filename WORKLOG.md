@@ -16,30 +16,31 @@
 ## 核心规则：每次实现新功能必须走完整流程
 
 ```
-用户提需求 → Claude 规划 + 输出 Agent Prompt → 用户投喂给外部 Agent 执行 → Claude 审查 → 通过后 commit push → 更新本文件
+用户提需求 → 桌面版 Claude 规划 + 输出 Agent Prompt → Claude Code 写代码 → 桌面版 Claude 审查 → 通过后 commit push → 更新本文件
 ```
 
 | 步骤 | 负责人 | 动作 |
 |------|--------|------|
-| ① 需求理解 | Claude | 分析需求，必要时进入 Plan Mode 设计方案 |
-| ② 输出 Prompt | Claude | **输出可直接投喂给 OpenWolf/OpenClaw 的完整 Agent Prompt**（格式参见 `PROMPT_FORMAT.md`） |
-| ③ 代码开发 | 外部 Agent | 用户将 Prompt 投喂给 OpenWolf/OpenClaw+DeepSeek 执行 |
-| ④ 代码审查 | Claude | 审查外部 Agent 的产出，逐项对照验收标准，发现 Bug 要修复 |
-| ⑤ 发布部署 | Claude | `git add` + `git commit` + `git push`，写清 commit message |
-| ⑥ 更新日志 | Claude | 更新本文件，记录本批次的所有内容 |
+| ① 需求理解 | 桌面版 Claude | 分析需求，必要时进入 Plan Mode 设计方案 |
+| ② 输出 Prompt | 桌面版 Claude | **输出可直接投喂给 Claude Code 的完整 Agent Prompt**（格式参见 `PROMPT_FORMAT.md`） |
+| ③ 代码开发 | Claude Code | 接收 Prompt 后在本地直接编写代码 |
+| ④ 代码审查 | 桌面版 Claude | 审查 Claude Code 的产出，逐项对照验收标准，发现 Bug 要修复 |
+| ⑤ 发布部署 | 桌面版 Claude | `git add` + `git commit` + `git push`，写清 commit message |
+| ⑥ 更新日志 | 桌面版 Claude | 更新本文件，记录本批次的所有内容 |
+
+> ⚠️ **工作流于 2026-06-25 变更**：代码开发角色从 OpenClaw+DeepSeek 切换为 Claude Code。桌面版 Claude 仍负责规划、审查和部署。
 
 ## 绝对禁止的行为
 
-- ❌ **禁止跳过 Agent Prompt 环节直接写代码**（除非用户明确说"这个不用走流程，你直接写"）
-- ❌ **禁止只给口头方案不给可投喂的 Prompt**（必须输出 Agent 可直接执行的完整 Prompt）
+- ❌ **Claude Code 禁止跳过 Prompt 直接开发**（必须等桌面版 Claude 输出 Prompt 后才动手）
 - ❌ **禁止不更新 WORKLOG.md 就结束会话**（新会话 Claude 会丢失上下文）
-- ❌ **禁止 push 前不审查**（必须逐项检查验收标准）
+- ❌ **禁止 push 前不审查**（桌面版 Claude 必须逐项检查验收标准）
 
 ## 何时可以不走完整流程（例外）
 
-- 修复 Bug（如"线上搜索返回空结果"类问题）→ Claude 直接查代码、定位、修复
-- 单文件小改动（如改个颜色、加个样式）→ Claude 直接改
-- 用户明确说"这个你自己改就行"
+- 修复 Bug（如"线上搜索返回空结果"类问题）→ Claude Code 直接查代码、定位、修复
+- 单文件小改动（如改个颜色、加个样式）→ Claude Code 直接改
+- 用户明确说"这个你自己改就行" → Claude Code 直接改
 
 ---
 
@@ -70,8 +71,8 @@
 | 线上部署 | ✅ `my-website-two-fawn-12.vercel.app` |
 | 技术栈 | 纯 HTML/CSS/JS + Vercel Serverless Function |
 | 分支 | `main` |
-| 最新 Commit | `f0d4bd6 📝 更新工作日志` |
-| OpenWolf | ✅ 已初始化 `v1.0.4` |
+| 最新 Commit | `c5a3e35 📝 Phase 6 审查完成 + 更新工作日志` |
+| Claude Code | ✅ 已配置 `.claude/rules/` + `.claude/settings.json` |
 | Vercel 环境变量 | ✅ PEXELS_API_KEY, PIXABAY_API_KEY, DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL（全部已配置） |
 
 ---
