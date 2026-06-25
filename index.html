@@ -17,16 +17,108 @@
   </header>
 
   <main>
-    <section class="hero">
-      <h2>欢迎</h2>
-      <p>这里是个人网站，正在建设中。</p>
+    <!-- 搜索区域 -->
+    <section class="search-section">
+      <div class="search-container">
+        <h2 class="search-title">AI 图片检索</h2>
+        <p class="search-subtitle">用自然语言描述你想要的图片，AI 帮你找到最匹配的结果</p>
+        <form id="search-form" class="search-form" role="search">
+          <div class="search-input-wrapper">
+            <input
+              type="text"
+              id="search-input"
+              class="search-input"
+              placeholder="试试输入：绿色植被，高清 · 极简风格办公桌 · 星空夜景壁纸"
+              autocomplete="off"
+              aria-label="搜索图片"
+            />
+            <button type="submit" class="search-btn" aria-label="开始搜索">
+              🔍
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- 结果区域 -->
+    <section id="results-section" class="results-section" aria-live="polite">
+      <!-- 状态1: 初始空状态 -->
+      <div id="state-empty" class="state-container">
+        <div class="state-icon">🔎</div>
+        <p class="state-text">输入关键词，开始探索海量图片</p>
+      </div>
+
+      <!-- 状态2: Loading 骨架屏 -->
+      <div id="state-loading" class="state-container hidden">
+        <div class="skeleton-grid">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+      </div>
+
+      <!-- 状态3: 无结果 -->
+      <div id="state-no-results" class="state-container hidden">
+        <div class="state-icon">😕</div>
+        <p class="state-text">没有找到匹配的图片</p>
+        <p class="state-hint">试试换一个关键词，或者用更简洁的描述</p>
+      </div>
+
+      <!-- 状态4: 网络错误 -->
+      <div id="state-error" class="state-container hidden">
+        <div class="state-icon">⚠️</div>
+        <p class="state-text">搜索出了点问题</p>
+        <button id="retry-btn" class="retry-btn">重新尝试</button>
+      </div>
+
+      <!-- 结果网格容器 -->
+      <div id="results-grid" class="results-grid hidden"></div>
+
+      <!-- 加载更多 -->
+      <div id="load-more" class="load-more hidden">
+        <button id="load-more-btn" class="load-more-btn">加载更多</button>
+      </div>
     </section>
   </main>
+
+  <!-- 图片详情弹窗 -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="图片详情">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <button class="modal-close" aria-label="关闭">✕</button>
+      <div class="modal-image-container">
+        <img id="modal-image" src="" alt="" class="modal-image" />
+        <div id="modal-loading" class="modal-loading hidden">
+          <div class="spinner"></div>
+        </div>
+      </div>
+      <div class="modal-info">
+        <div class="modal-info-row">
+          <span id="modal-source" class="modal-tag"></span>
+          <span class="modal-resolution" id="modal-resolution"></span>
+        </div>
+        <p id="modal-photographer" class="modal-photographer"></p>
+        <a id="modal-download" class="modal-download-btn" href="#" target="_blank" rel="noopener">
+          查看原图 →
+        </a>
+      </div>
+    </div>
+  </div>
 
   <footer>
     <p>&copy; 2026 Tan Runzhe</p>
   </footer>
 
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/gallery.js"></script>
+  <script src="js/modal.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
