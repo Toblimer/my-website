@@ -54,7 +54,9 @@
   // 表单提交
   App.handleSearch = function (event) {
     if (event) event.preventDefault();
-    var query = App.$('#search-input').value.trim();
+
+    // 使用拼接后的查询词（原始输入 + 已选标签）
+    var query = App.getCombinedQuery ? App.getCombinedQuery() : App.$('#search-input').value.trim();
     if (!query) {
       var wrapper = App.$('.search-input-wrapper');
       if (wrapper) {
@@ -64,6 +66,10 @@
       App.$('#search-input').focus();
       return;
     }
+
+    // 隐藏建议面板
+    if (App.hideSuggestPanel) App.hideSuggestPanel();
+
     doSearch(query, 1);
   };
 

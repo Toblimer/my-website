@@ -37,6 +37,20 @@
             </button>
           </div>
         </form>
+
+        <!-- 已选标签栏 -->
+        <div id="selected-tags" class="selected-tags hidden" aria-label="已选标签"></div>
+
+        <!-- 搜索建议面板 -->
+        <div id="suggest-panel" class="suggest-panel hidden" role="region" aria-label="搜索建议">
+          <div id="suggest-loading" class="suggest-loading hidden">
+            <span class="suggest-spinner"></span>
+            <span>生成建议中…</span>
+          </div>
+          <div id="suggest-tags" class="suggest-tags"></div>
+          <div id="suggest-empty" class="suggest-empty hidden">暂无相关建议</div>
+          <div id="suggest-error" class="suggest-error hidden">建议暂时不可用</div>
+        </div>
       </div>
     </section>
 
@@ -116,6 +130,7 @@
 
   <script src="js/utils.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/suggest.js"></script>
   <script src="js/search.js"></script>
   <script src="js/gallery.js"></script>
   <script src="js/modal.js"></script>
