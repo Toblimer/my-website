@@ -1,7 +1,7 @@
 # 📋 工作日志 — my-website
 
 > 最后更新：2026-06-25
-> 当前阶段：搜索建议标签功能 ✅ + 交集/并集搜索模式 ✅ — 准备下一功能规划
+> 当前阶段：自定义子话题标签功能 ✅ — 准备下一功能规划
 >
 > 🌐 线上地址：https://my-website-two-fawn-12.vercel.app/
 > 📦 GitHub：https://github.com/Toblimer/my-website
@@ -89,6 +89,7 @@
 | 🖼 前端交互逻辑（JS） | ✅ |
 | 🏷 搜索建议标签（AI 生成子话题） | ✅ |
 | 🔀 交集/并集搜索模式 | ✅ |
+| ✏️ 标签编辑/自定义标签 | ✅ |
 | 📊 高级筛选（颜色/尺寸/方向） | ⏳ |
 | 📝 搜索历史管理 | ⏳ |
 | ❤️ 用户收藏功能 | ⏳ |
@@ -153,6 +154,24 @@ App.getCombinedQuery() / App.hideSuggestPanel()
 | 修复 | Claude | Bug 1: toggleTag() 中 updateModeToggleVisibility 调用时机错误；Bug 2: clearSelectedTags() 未更新切换器 | ✅ |
 | 部署 | Claude | commit `9a12049` + push | ✅ |
 
+### 2026-06-25 · 会话 #4（Phase 6：自定义编辑/添加子话题标签）
+
+| # | 环节 | 产出 | 结论 |
+|---|------|------|------|
+| 规划 | 桌面版 Claude | 需求分析 + Agent Prompt（3 个文件改动方案） | — |
+| 开发 | Claude Code | index.html + style.css + suggest.js | 发现 3 项需修复 |
+| 审查 | 桌面版 Claude | 逐项验收标准检查 + Bug 修复 + commit push | ✅ |
+
+审查发现并修复的问题：
+| # | 问题 | 严重度 | 修复方案 |
+|---|------|:---:|------|
+| 1 | Esc 取消编辑被 blur 事件覆盖，编辑仍被保存 | **高** | 新增 `editingIsCancelling` 标志位，blur 中检测跳过 |
+| 2 | Enter 提交后 renderSuggestions 触发 blur，导致二次 commit | **中** | 新增 `editingIsCommitting` 标志位，blur 中检测跳过 |
+| 3 | CSS 中 `.suggest-tag` 重复定义两次（原有 + 新增的 `position:relative`）| **低** | 合并到原有 `.suggest-tag` 块中 |
+| 4 | 移动端编辑按钮无法可见（纯 hover 触发）| **中** | 在 `@media (max-width: 480px)` 中设为始终显示 |
+
+部署：commit `ecdd758` + push
+
 ### ⚠️ 工作流执行记录
 
 | 日期 | 批次 | 是否遵循标准流程 | 备注 |
@@ -161,12 +180,16 @@ App.getCombinedQuery() / App.hideSuggestPanel()
 | 06-25 | Bug 修复 | ⏭️ 跳过 | Bug 修复属于例外，Claude 直接修 |
 | 06-25 | Phase 4 | ❌ | Claude 跳过了 Prompt 环节直接写代码 |
 | 06-25 | Phase 5 | ✅ | Claude 出 Prompt → OpenClaw 执行 → Claude 审查修复 → commit push |
+| 06-25 | Phase 6 | ✅ | 桌面版 Claude 出 Prompt → Claude Code 开发 → 桌面版 Claude 审查修复 → commit push |
 
-> **经验教训**：Phase 5 遵循了标准流程。OpenClaw 产出的代码整体正确，但 2 处细节仍需人工审查发现——`toggleTag()` 中状态检查时机错误、`clearSelectedTags()` 遗漏切换器更新。AI 写的代码仍然需要人工审查。
+> **经验教训**：
+> - Phase 5：OpenClaw 产出的代码整体正确，但 2 处细节仍需人工审查发现。
+> - Phase 6：Claude Code 产出的代码 Bug 更多（blur/Enter/Esc 竞态），核心原因是 `renderSuggestions()` 用 `innerHTML = ''` 清空 DOM 会触发 input 的 blur 事件。这是一个经典的 DOM 事件时序问题，AI 容易忽视。修复方案是加标志位锁（`editingIsCancelling` / `editingIsCommitting`）。
+> - AI 写的代码仍然需要人工审查，特别是涉及 DOM 事件时序的场景。
 
 ---
 
 ## 下一步
 
-- 规划下一功能（按标准流程：Claude 出 Prompt → Agent 执行 → Claude 审查）
+- 规划下一功能（按标准流程：Claude 出 Prompt → Claude Code 开发 → Claude 审查）
 - 候选功能：高级筛选 / 搜索历史 / 收藏夹

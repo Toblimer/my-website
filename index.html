@@ -60,6 +60,12 @@
             <span>生成建议中…</span>
           </div>
           <div id="suggest-tags" class="suggest-tags"></div>
+          <!-- 自定义标签输入（内嵌在建议标签行中） -->
+          <div id="custom-tag-row" class="custom-tag-row hidden">
+            <input type="text" id="custom-tag-input" class="custom-tag-input" placeholder="输入自定义标签…" maxlength="20" autocomplete="off" />
+            <button type="button" id="custom-tag-confirm" class="custom-tag-confirm" aria-label="确认添加">✓</button>
+            <button type="button" id="custom-tag-cancel" class="custom-tag-cancel" aria-label="取消">✕</button>
+          </div>
           <div id="suggest-empty" class="suggest-empty hidden">暂无相关建议</div>
           <div id="suggest-error" class="suggest-error hidden">建议暂时不可用</div>
         </div>
