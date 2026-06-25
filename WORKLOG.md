@@ -1,7 +1,7 @@
 # 📋 工作日志 — my-website
 
 > 最后更新：2026-06-25
-> 当前阶段：搜索建议标签功能 ✅ — 准备下一功能规划
+> 当前阶段：搜索建议标签功能 ✅ + 交集/并集搜索模式 ✅ — 准备下一功能规划
 >
 > 🌐 线上地址：https://my-website-two-fawn-12.vercel.app/
 > 📦 GitHub：https://github.com/Toblimer/my-website
@@ -88,6 +88,7 @@
 | 🖼 前端搜索界面（HTML + CSS） | ✅ |
 | 🖼 前端交互逻辑（JS） | ✅ |
 | 🏷 搜索建议标签（AI 生成子话题） | ✅ |
+| 🔀 交集/并集搜索模式 | ✅ |
 | 📊 高级筛选（颜色/尺寸/方向） | ⏳ |
 | 📝 搜索历史管理 | ⏳ |
 | ❤️ 用户收藏功能 | ⏳ |
@@ -142,17 +143,15 @@ App.getCombinedQuery() / App.hideSuggestPanel()
 | 开发 #3 | OpenClaw+DeepSeek | 暗色模式切换 | — |
 | 审查 #3 | Claude | 亮/暗切换 + 持久化 + 系统偏好 | ✅ 8/8 |
 
-### 2026-06-25 · 会话 #2
+### 2026-06-25 · 会话 #3（Phase 5：交集/并集搜索模式）
 
 | # | 环节 | 产出 | 结论 |
 |---|------|------|------|
-| 规划 | Claude | 三批次 MVP 方案（后端→前端界面→前端 JS） | — |
-| 开发 ①② | OpenClaw+DeepSeek | api/search.js + index.html + style.css | — |
-| 审查 ①② | Claude | 后端 API + 前端界面 | ✅ 12/12 |
-| 开发 ③ | Logos | 6 个 JS 模块 | 发现 2 个 Bug |
-| 审查 ③ | Claude | JS 模块审查 + Bug 修复 + commit push | ✅ 10/10 |
-| Bug 修复 | Claude | 线上搜索返回空结果（Promise.allSettled .value 缺失） | ✅ |
-| Phase 4 | Claude（直接写） | 搜索建议标签功能（6 个文件） | ✅ |
+| 规划 | Claude | 需求分析 + Agent Prompt（6 个文件改动方案） | — |
+| 开发 | OpenClaw+DeepSeek | index.html + style.css + suggest.js + api.js + search.js + api/search.js | 发现 2 个 Bug |
+| 审查 | Claude | 逐项验收标准检查 + Bug 修复 | ✅ 13/13 |
+| 修复 | Claude | Bug 1: toggleTag() 中 updateModeToggleVisibility 调用时机错误；Bug 2: clearSelectedTags() 未更新切换器 | ✅ |
+| 部署 | Claude | commit `9a12049` + push | ✅ |
 
 ### ⚠️ 工作流执行记录
 
@@ -160,13 +159,14 @@ App.getCombinedQuery() / App.hideSuggestPanel()
 |------|------|:---:|------|
 | 06-24 | ①~③ | ✅ | Claude 出 Prompt → OpenClaw 执行 → Claude 审查 |
 | 06-25 | Bug 修复 | ⏭️ 跳过 | Bug 修复属于例外，Claude 直接修 |
-| 06-25 | Phase 4 | ❌ | **Claude 跳过了 Prompt 环节直接写代码**，下次必须遵循流程 |
+| 06-25 | Phase 4 | ❌ | Claude 跳过了 Prompt 环节直接写代码 |
+| 06-25 | Phase 5 | ✅ | Claude 出 Prompt → OpenClaw 执行 → Claude 审查修复 → commit push |
 
-> **经验教训**：Phase 4 虽然结果 OK，但跳过了 Agent Prompt 环节。如果后续功能更大，擅自跳过会导致用户无法控制代码质量。除非用户明确说"你自己写"，否则必须走标准流程。
+> **经验教训**：Phase 5 遵循了标准流程。OpenClaw 产出的代码整体正确，但 2 处细节仍需人工审查发现——`toggleTag()` 中状态检查时机错误、`clearSelectedTags()` 遗漏切换器更新。AI 写的代码仍然需要人工审查。
 
 ---
 
 ## 下一步
 
-- 规划 Phase 5 新功能（按标准流程：Claude 出 Prompt → Agent 执行 → Claude 审查）
+- 规划下一功能（按标准流程：Claude 出 Prompt → Agent 执行 → Claude 审查）
 - 候选功能：高级筛选 / 搜索历史 / 收藏夹
