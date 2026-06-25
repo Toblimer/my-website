@@ -14,9 +14,10 @@
   var cache = new Map();
   var CACHE_TTL = 5 * 60 * 1000;
 
-  App.searchImages = async function (query, page) {
+  App.searchImages = async function (query, page, mode) {
     if (page === undefined) page = 1;
-    var cacheKey = query + '::' + page;
+    if (mode === undefined) mode = 'union';
+    var cacheKey = query + '::' + page + '::' + mode;
     var cached = cache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       return cached.data;
@@ -27,6 +28,7 @@
       page: String(page),
       perPage: '20',
     });
+    if (mode) params.set('mode', mode);
     var response = await fetch(API_BASE + '/api/search?' + params.toString());
 
     if (!response.ok) {

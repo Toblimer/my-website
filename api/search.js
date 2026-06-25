@@ -35,10 +35,14 @@ export default async function handler(req, res) {
 
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const perPage = Math.min(40, Math.max(1, parseInt(req.query.perPage, 10) || 20));
+  let mode = (req.query.mode || 'union').trim();
+  if (mode !== 'union' && mode !== 'intersection') {
+    mode = 'union';
+  }
 
   try {
     // 第 1 步：AI 查询改写
-    const phrases = await rewriteQuery(q);
+    const phrases = await rewriteQuery(q, mode);
 
     // 第 2 步：并行搜索（一个短语一个 API，交替分配保证多样性）
     const searchPromises = phrases.map((phrase, index) => {
@@ -109,7 +113,7 @@ export default async function handler(req, res) {
 /**
  * 调用 DeepSeek V4 API 将自然语言查询改写为英文搜索短语
  */
-async function rewriteQuery(query) {
+async function rewriteQuery(query, mode) {
   const baseUrl = process.env.DEEPSEEK_BASE_URL || DEFAULT_DEEPSEEK_BASE_URL;
   const apiKey = process.env.DEEPSEEK_API_KEY;
 
@@ -118,11 +122,16 @@ async function rewriteQuery(query) {
     return [query];
   }
 
-  const systemPrompt =
-    'You are a search query optimizer. Given a user\'s image description in any language, ' +
-    'rewrite it into 3-5 concise English keyword phrases optimized for stock photo APIs (Pexels, Pixabay). ' +
-    'Each phrase should be 2-5 words. Return ONLY a JSON array of strings, no explanation. ' +
-    'Example input: "绿色植被，高清" → output: ["green vegetation HD", "lush forest high resolution", "nature greenery sharp", "dense foliage wallpaper"]';
+  const systemPrompt = mode === 'intersection'
+    ? 'You are a search query optimizer. The user wants images that match ALL of the specified terms SIMULTANEOUSLY. ' +
+      'Combine ALL the keywords into 1-2 concise English search phrases where every phrase incorporates every key concept. ' +
+      'Each phrase should be 3-7 words. Return ONLY a JSON array of strings, no explanation. ' +
+      'Example: query "中国 水墨 传统建筑" → output: ["traditional Chinese architecture ink wash painting", "ancient Chinese building sumi-e art"]\n' +
+      'Example: query "sunset ocean mountain" → output: ["sunset over ocean coastal mountains", "golden hour seascape mountain silhouette"]'
+    : 'You are a search query optimizer. Given a user\'s image description in any language, ' +
+      'rewrite it into 3-5 concise English keyword phrases optimized for stock photo APIs (Pexels, Pixabay). ' +
+      'Each phrase should be 2-5 words. Return ONLY a JSON array of strings, no explanation. ' +
+      'Example input: "绿色植被，高清" → output: ["green vegetation HD", "lush forest high resolution", "nature greenery sharp", "dense foliage wallpaper"]';
 
   const userPrompt = query;
 

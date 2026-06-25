@@ -26,7 +26,8 @@
     showState('loading');
 
     try {
-      var data = await App.searchImages(query, page);
+      var mode = App.getSearchMode ? App.getSearchMode() : 'union';
+      var data = await App.searchImages(query, page, mode);
 
       if (page === 1) {
         App.state.results = [];

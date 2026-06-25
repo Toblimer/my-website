@@ -12,6 +12,7 @@
   var allSuggestedTags = [];
   var currentRequestId = 0;
   var controller = null;
+  var searchMode = 'union';
 
   // 获取 API 基础 URL
   function getApiBase() {
@@ -130,6 +131,7 @@
         chipElement.setAttribute('aria-checked', 'false');
       }
     }
+    updateModeToggleVisibility();
     renderSelectedTags();
   }
 
@@ -144,6 +146,7 @@
     }
 
     App.show('#selected-tags');
+    updateModeToggleVisibility();
     container.innerHTML = '';
 
     selectedTags.forEach(function (tag) {
@@ -168,6 +171,7 @@
   function removeTag(tag) {
     selectedTags = selectedTags.filter(function (t) { return t !== tag; });
     renderSelectedTags();
+    updateModeToggleVisibility();
     // 同步更新建议面板中的芯片状态
     var chips = App.$$('.suggest-tag');
     chips.forEach(function (chip) {
@@ -186,6 +190,7 @@
   App.clearSelectedTags = function () {
     selectedTags = [];
     renderSelectedTags();
+    updateModeToggleVisibility();
     var chips = App.$$('.suggest-tag--selected');
     chips.forEach(function (chip) {
       chip.classList.remove('suggest-tag--selected');
@@ -199,6 +204,85 @@
     if (selectedTags.length === 0) return baseQuery;
     return baseQuery + ' ' + selectedTags.join(' ');
   };
+
+  App.getSearchMode = function () {
+    return searchMode;
+  };
+
+  function updateModeToggleVisibility() {
+    var toggle = App.$('#search-mode-toggle');
+    if (!toggle) return;
+    if (selectedTags.length >= 2) {
+      App.show('#search-mode-toggle');
+    } else {
+      App.hide('#search-mode-toggle');
+      if (searchMode === 'intersection') {
+        searchMode = 'union';
+        var unionBtn = App.$('.mode-btn[data-mode="union"]');
+        var interBtn = App.$('.mode-btn[data-mode="intersection"]');
+        if (unionBtn) {
+          unionBtn.classList.add('mode-btn--active');
+          unionBtn.setAttribute('aria-checked', 'true');
+        }
+        if (interBtn) {
+          interBtn.classList.remove('mode-btn--active');
+          interBtn.setAttribute('aria-checked', 'false');
+        }
+        localStorage.setItem('search-mode', 'union');
+      }
+    }
+  }
+
+  function initModeToggle() {
+    var stored = localStorage.getItem('search-mode');
+    if (stored === 'union' || stored === 'intersection') {
+      searchMode = stored;
+    } else {
+      searchMode = 'union';
+    }
+    var unionBtn = App.$('.mode-btn[data-mode="union"]');
+    var interBtn = App.$('.mode-btn[data-mode="intersection"]');
+    if (searchMode === 'union') {
+      if (unionBtn) {
+        unionBtn.classList.add('mode-btn--active');
+        unionBtn.setAttribute('aria-checked', 'true');
+      }
+      if (interBtn) {
+        interBtn.classList.remove('mode-btn--active');
+        interBtn.setAttribute('aria-checked', 'false');
+      }
+    } else {
+      if (interBtn) {
+        interBtn.classList.add('mode-btn--active');
+        interBtn.setAttribute('aria-checked', 'true');
+      }
+      if (unionBtn) {
+        unionBtn.classList.remove('mode-btn--active');
+        unionBtn.setAttribute('aria-checked', 'false');
+      }
+    }
+    // 绑定点击事件
+    var modeBtns = App.$$('.mode-btn');
+    modeBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var mode = this.getAttribute('data-mode');
+        if (mode === searchMode) return;
+        searchMode = mode;
+        localStorage.setItem('search-mode', mode);
+        // 更新所有按钮样式
+        modeBtns.forEach(function (b) {
+          var isActive = b.getAttribute('data-mode') === mode;
+          if (isActive) {
+            b.classList.add('mode-btn--active');
+            b.setAttribute('aria-checked', 'true');
+          } else {
+            b.classList.remove('mode-btn--active');
+            b.setAttribute('aria-checked', 'false');
+          }
+        });
+      });
+    });
+  }
 
   App.hideSuggestPanel = function () {
     App.hide('#suggest-panel');
@@ -248,6 +332,7 @@
 
   // ===== 初始化 =====
   function init() {
+    initModeToggle();
     var input = App.$('#search-input');
     if (input) {
       input.addEventListener('input', handleInput);

@@ -38,6 +38,18 @@
           </div>
         </form>
 
+        <!-- 搜索模式切换 -->
+        <div id="search-mode-toggle" class="search-mode-toggle hidden" role="radiogroup" aria-label="搜索模式">
+          <span class="mode-label">搜索模式:</span>
+          <button type="button" class="mode-btn mode-btn--active" data-mode="union" role="radio" aria-checked="true">
+            并集查询
+          </button>
+          <button type="button" class="mode-btn" data-mode="intersection" role="radio" aria-checked="false">
+            交集查询
+          </button>
+          <span class="mode-tooltip" title="并集：匹配任一标签的图片；交集：必须同时匹配所有标签">ⓘ</span>
+        </div>
+
         <!-- 已选标签栏 -->
         <div id="selected-tags" class="selected-tags hidden" aria-label="已选标签"></div>
 
