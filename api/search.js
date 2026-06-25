@@ -65,7 +65,7 @@ export default async function handler(req, res) {
 
     // 展平所有结果
     const allResults = settledFlat.flatMap((r) => {
-      if (r.status === 'fulfilled') return r.results || [];
+      if (r.status === 'fulfilled') return (r.value && r.value.results) || [];
       console.error('[search] 单个 API 搜索失败:', r.reason);
       return [];
     });
@@ -88,7 +88,7 @@ export default async function handler(req, res) {
 
     // 计算 total（取各源最大 total 值）
     const totals = settledFlat.flatMap((r) => {
-      if (r.status === 'fulfilled') return [r.total || 0];
+      if (r.status === 'fulfilled') return [r.value && r.value.total ? r.value.total : 0];
       return [];
     });
     const total = totals.length > 0 ? Math.max(...totals) : 0;
