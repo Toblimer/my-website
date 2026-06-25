@@ -3,7 +3,14 @@
 (function () {
   var App = window.App;
 
-  // 简单内存缓存，5 分钟过期
+  // API 基础 URL：线上用相对路径，本地开发用 Vercel 生产 API
+  var API_BASE = (function () {
+    var host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.')) {
+      return 'https://my-website-two-fawn-12.vercel.app';
+    }
+    return '';
+  })();
   var cache = new Map();
   var CACHE_TTL = 5 * 60 * 1000;
 
@@ -20,7 +27,7 @@
       page: String(page),
       perPage: '20',
     });
-    var response = await fetch('/api/search?' + params.toString());
+    var response = await fetch(API_BASE + '/api/search?' + params.toString());
 
     if (!response.ok) {
       var errorData = await response.json().catch(function () { return {}; });
