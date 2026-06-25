@@ -86,11 +86,27 @@
     allSuggestedTags.forEach(function (tag) {
       var chip = document.createElement('span');
       chip.className = 'suggest-tag';
-      chip.textContent = tag;
       chip.setAttribute('data-tag', tag);
       chip.setAttribute('tabindex', '0');
       chip.setAttribute('role', 'checkbox');
       chip.setAttribute('aria-checked', 'false');
+
+      // 标签文本
+      var textSpan = document.createElement('span');
+      textSpan.className = 'suggest-tag-text';
+      textSpan.textContent = tag;
+      chip.appendChild(textSpan);
+
+      // 编辑按钮
+      var editBtn = document.createElement('button');
+      editBtn.className = 'suggest-tag-edit-btn';
+      editBtn.setAttribute('aria-label', '编辑标签');
+      editBtn.textContent = '\u270E';
+      editBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        startEditTag(chip, tag);
+      });
+      chip.appendChild(editBtn);
 
       // 已选中？
       if (selectedTags.indexOf(tag) !== -1) {
@@ -112,7 +128,157 @@
       tagsContainer.appendChild(chip);
     });
 
+    // 追加 "+ 自定义" 芯片
+    var addChip = document.createElement('span');
+    addChip.className = 'suggest-tag suggest-tag--add';
+    addChip.innerHTML = '<span class="suggest-tag--add-icon">+</span> 自定义';
+    addChip.setAttribute('tabindex', '0');
+    addChip.setAttribute('aria-label', '添加自定义标签');
+    addChip.addEventListener('click', function (e) {
+      e.stopPropagation();
+      startAddTag();
+    });
+    addChip.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        startAddTag();
+      }
+    });
+    tagsContainer.appendChild(addChip);
+
     App.show('#suggest-tags');
+  }
+
+  // ===== 标签编辑/添加 =====
+  var editingIsCancelling = false; // 防止 blur 覆盖 Esc 取消
+  var editingIsCommitting = false; // 防止 blur 二次触发 commit
+
+  function startEditTag(chipElement, currentText) {
+    editingIsCancelling = false;
+    editingIsCommitting = false;
+    chipElement.innerHTML = '';
+    chipElement.classList.add('suggest-tag--editing');
+
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'suggest-tag-input';
+    input.value = currentText;
+    input.maxLength = 20;
+    chipElement.appendChild(input);
+
+    input.focus();
+    input.select();
+
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        commitEditTag(chipElement, input.value.trim(), currentText);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        editingIsCancelling = true;
+        cancelEditTag(chipElement, currentText);
+      }
+    });
+
+    input.addEventListener('blur', function () {
+      // 如果是因为 Esc 触发的 blur，跳过
+      if (editingIsCancelling) {
+        editingIsCancelling = false;
+        return;
+      }
+      // 如果已经通过 Enter 提交了，跳过 blur 的二次提交
+      if (editingIsCommitting) return;
+      commitEditTag(chipElement, input.value.trim(), currentText);
+    });
+  }
+
+  function commitEditTag(chipElement, newText, oldText) {
+    editingIsCommitting = true;
+    // 校验
+    if (!newText || newText === oldText) {
+      editingIsCommitting = false;
+      cancelEditTag(chipElement, oldText);
+      return;
+    }
+
+    // 检查重复（大小写不敏感，排除自身）
+    var duplicate = false;
+    for (var i = 0; i < allSuggestedTags.length; i++) {
+      if (allSuggestedTags[i].toLowerCase() === newText.toLowerCase() && allSuggestedTags[i] !== oldText) {
+        duplicate = true;
+        break;
+      }
+    }
+    if (duplicate) {
+      editingIsCommitting = false;
+      cancelEditTag(chipElement, oldText);
+      return;
+    }
+
+    // 更新 allSuggestedTags
+    var idx = allSuggestedTags.indexOf(oldText);
+    if (idx !== -1) {
+      allSuggestedTags[idx] = newText;
+    }
+
+    // 同步更新 selectedTags
+    var selIdx = selectedTags.indexOf(oldText);
+    if (selIdx !== -1) {
+      selectedTags[selIdx] = newText;
+    }
+
+    // 刷新面板
+    renderSuggestions();
+    renderSelectedTags();
+  }
+
+  function cancelEditTag(chipElement, originalText) {
+    editingIsCancelling = false;
+    editingIsCommitting = false;
+    renderSuggestions();
+  }
+
+  function startAddTag() {
+    var row = App.$('#custom-tag-row');
+    var input = App.$('#custom-tag-input');
+    if (!row || !input) return;
+
+    App.show('#custom-tag-row');
+    input.value = '';
+    input.focus();
+  }
+
+  function commitAddTag() {
+    var input = App.$('#custom-tag-input');
+    if (!input) return;
+    var text = input.value.trim();
+
+    // 校验
+    if (!text || text.length > 20) return;
+
+    // 检查重复（大小写不敏感）
+    var duplicate = false;
+    for (var i = 0; i < allSuggestedTags.length; i++) {
+      if (allSuggestedTags[i].toLowerCase() === text.toLowerCase()) {
+        duplicate = true;
+        break;
+      }
+    }
+    if (duplicate) return;
+
+    // 添加到建议列表
+    allSuggestedTags.push(text);
+
+    // 自动选中
+    selectedTags.push(text);
+
+    // 隐藏输入行
+    App.hide('#custom-tag-row');
+    App.$('#custom-tag-input').value = '';
+
+    // 刷新
+    renderSuggestions();
+    renderSelectedTags();
   }
 
   // ===== 标签选择/取消 =====
@@ -269,7 +435,6 @@
         if (mode === searchMode) return;
         searchMode = mode;
         localStorage.setItem('search-mode', mode);
-        // 更新所有按钮样式
         modeBtns.forEach(function (b) {
           var isActive = b.getAttribute('data-mode') === mode;
           if (isActive) {
@@ -282,6 +447,41 @@
         });
       });
     });
+  }
+
+  // 初始化自定义标签输入行的事件
+  function initCustomTagRow() {
+    var confirmBtn = App.$('#custom-tag-confirm');
+    var cancelBtn = App.$('#custom-tag-cancel');
+    var input = App.$('#custom-tag-input');
+
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        commitAddTag();
+      });
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        App.hide('#custom-tag-row');
+        App.$('#custom-tag-input').value = '';
+      });
+    }
+
+    if (input) {
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          commitAddTag();
+        } else if (e.key === 'Escape') {
+          App.hide('#custom-tag-row');
+          input.value = '';
+        }
+        e.stopPropagation();
+      });
+    }
   }
 
   App.hideSuggestPanel = function () {
@@ -311,6 +511,10 @@
     var selectedContainer = App.$('#selected-tags');
     if (!panel || panel.classList.contains('hidden')) return;
 
+    // 如果有标签正在编辑中，不关闭面板
+    var editingChip = App.$('.suggest-tag--editing');
+    if (editingChip) return;
+
     setTimeout(function () {
       var activeEl = document.activeElement;
       var hitPanel = panel.contains(activeEl);
@@ -324,6 +528,15 @@
 
   function handleKeyDown(e) {
     if (e.key === 'Escape') {
+      // 如果有标签正在编辑中，优先取消编辑
+      var editingChip = App.$('.suggest-tag--editing');
+      if (editingChip) {
+        var dataTag = editingChip.getAttribute('data-tag');
+        if (dataTag) {
+          cancelEditTag(editingChip, dataTag);
+          return;
+        }
+      }
       App.hide('#suggest-panel');
       var input = App.$('#search-input');
       if (input) input.blur();
@@ -333,6 +546,7 @@
   // ===== 初始化 =====
   function init() {
     initModeToggle();
+    initCustomTagRow();
     var input = App.$('#search-input');
     if (input) {
       input.addEventListener('input', handleInput);
