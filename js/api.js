@@ -3,10 +3,11 @@
 (function () {
   var App = window.App;
 
-  // API 基础 URL：线上用相对路径，本地开发用 Vercel 生产 API
+  // API 基础 URL：线上用相对路径，本地开发/Tauri 用 Vercel 生产 API
   var API_BASE = (function () {
     var host = window.location.hostname;
-    if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.')) {
+    // 本地开发（localhost / 127.0.0.1 / 192.168.x.x）或 Tauri（tauri.localhost / 空 host）都用 Vercel 生产 URL
+    if (!host || host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('tauri.')) {
       return 'https://my-website-two-fawn-12.vercel.app';
     }
     return '';

@@ -1,0 +1,20 @@
+[package]
+name = "my-website"
+version = "1.0.0"
+description = "我的网站 Windows desktop client"
+authors = ["Runzhe Tan"]
+edition = "2021"
+
+[lib]
+name = "my_website_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-updater = "2"
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

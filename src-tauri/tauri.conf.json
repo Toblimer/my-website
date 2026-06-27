@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "我的网站",
+  "version": "1.0.0",
+  "identifier": "com.tanrunzhe.my-website",
+  "build": {
+    "frontendDist": "../"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "我的网站",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' https://my-website-two-fawn-12.vercel.app https://api.pexels.com https://pixabay.com https://api.deepseek.com; img-src 'self' https://*.pexels.com https://*.pixabay.com data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi", "nsis"],
+    "createUpdaterArtifacts": true,
+    "icon": [
+      "../assets/favicon.ico",
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "wix": {},
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/Toblimer/my-website/releases/latest/download/latest.json"
+      ],
+      "pubkey": "PLACEHOLDER_WILL_BE_REPLACED_AFTER_KEY_GENERATION"
+    }
+  }
+}
