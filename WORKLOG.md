@@ -1,7 +1,7 @@
 # 📋 工作日志 — my-website
 
 > 最后更新：2026-06-27
-> 当前阶段：Tauri v2 桌面客户端 ✅ — 修复建议面板 API 兼容
+> 当前阶段：Tauri v2 桌面客户端 ✅ — 修复图片加载问题
 >
 > 🌐 线上地址：https://my-website-two-fawn-12.vercel.app/
 > 📦 GitHub：https://github.com/Toblimer/my-website
@@ -71,7 +71,7 @@
 | 线上部署 | ✅ `my-website-two-fawn-12.vercel.app` |
 | 技术栈 | 纯 HTML/CSS/JS + Vercel Serverless Function |
 | 分支 | `main` |
-| 最新 Commit | `b578422 🐛 修复 Tauri 客户端 suggest.js 的 API_BASE 不兼容问题` |
+| 最新 Commit | `026180f 🐛 修复 Tauri CSP img-src 遗漏 Pixabay 图片域名` |
 | Claude Code | ✅ 已配置 `.claude/rules/` + `.claude/settings.json` |
 | Vercel 环境变量 | ✅ PEXELS_API_KEY, PIXABAY_API_KEY, DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL（全部已配置） |
 
@@ -218,6 +218,24 @@ App.getCombinedQuery() / App.hideSuggestPanel()
 
 部署：commit `b578422` + push
 
+### 2026-06-27 · 会话 #7（Bug 修复：Pixabay 图片在 Tauri 中加载失败）
+
+| # | 环节 | 产出 | 结论 |
+|---|------|------|------|
+| 发现 | 用户 | Tauri 客户端部分图片不显示（Pixabay），网页端正常 | ❌ |
+| 定位 | 桌面版 Claude | 搜索 Pexels/Pixabay 实际 CDN 域名 → 发现 CSP img-src 遗漏 | 根因确认 |
+| 修复 | 桌面版 Claude | `tauri.conf.json` CSP img-src 补充 `https://pixabay.com` `https://cdn.pixabay.com` `https://images.pexels.com` | ✅ |
+| 部署 | 桌面版 Claude | commit `026180f` + push | ✅ |
+
+审查发现并修复：
+| # | 问题 | 严重度 | 修复方案 |
+|---|------|:---:|------|
+| 1 | CSP `img-src` 只有 `*.pixabay.com`（通配子域），不匹配 `pixabay.com/get/...`（根域） | **关键** | 增加 `https://pixabay.com` + `https://cdn.pixabay.com` + `https://images.pexels.com` |
+
+> **根因**：Pixabay 的 `webformatURL` / `largeImageURL` 实际格式为 `https://pixabay.com/get/...`（根域，无子域名）。CSP 通配符 `https://*.pixabay.com` 只匹配 `cdn.pixabay.com` 之类子域，**不匹配** `pixabay.com` 本身。Tauri WebView 严格按 CSP 拦截了这些请求。网页端不受影响因为 CSP 由 Vercel HTTP 响应头控制（未设 img-src 限制），但 Tauri 在 HTML 层强制实施。
+
+部署：commit `026180f` + push
+
 | 日期 | 批次 | 是否遵循标准流程 | 备注 |
 |------|------|:---:|------|
 | 06-24 | ①~③ | ✅ | Claude 出 Prompt → OpenClaw 执行 → Claude 审查 |
@@ -226,12 +244,12 @@ App.getCombinedQuery() / App.hideSuggestPanel()
 | 06-25 | Phase 5 | ✅ | Claude 出 Prompt → OpenClaw 执行 → Claude 审查修复 → commit push |
 | 06-25 | Phase 6 | ✅ | 桌面版 Claude 出 Prompt → Claude Code 开发 → 桌面版 Claude 审查修复 → commit push |
 | 06-27 | Phase 7a | ✅ | 桌面版 Claude 出 Prompt → Claude Code 开发 → 桌面版 Claude 审查修复 → commit push |
-| 06-27 | Bug 修复 | ⏭️ 跳过 | suggest.js getApiBase() Tauri 兼容遗漏，Claude 直接修 |
+| 06-27 | Bug 修复 | ⏭️ 跳过 | CSP img-src 遗漏 pixabay.com 根域，导致 Tauri 内 Pixabay 图片被拦截，Claude 直接修 |
 
 > **经验教训**：
 > - Phase 5：OpenClaw 产出的代码整体正确，但 2 处细节仍需人工审查发现。
-> - Phase 6：Claude Code 产出的代码 Bug 更多（blur/Enter/Esc 竞态），核心原因是 `renderSuggestions()` 用 `innerHTML = ''` 清空 DOM 会触发 input 的 blur 事件。这是一个经典的 DOM 事件时序问题，AI 容易忽视。修复方案是加标志位锁（`editingIsCancelling` / `editingIsCommitting`）。
-> - AI 写的代码仍然需要人工审查，特别是涉及 DOM 事件时序的场景。
+> - Tauri CSP 通配符规则：`*.domain.com` 只匹配子域不匹配根域，CSP 没有类似 `**` 的泛域名语法。必须单独列出根域 `domain.com` + 子域 `*.domain.com`。
+> - Phase 6：Claude Code 产出 Bug 的核心原因是 `renderSuggestions()` 用 `innerHTML = ''` 清空 DOM 会触发 input 的 blur 事件——经典 DOM 事件时序问题，AI 容易忽视。
 
 ---
 
