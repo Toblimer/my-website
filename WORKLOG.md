@@ -1,7 +1,7 @@
 # 📋 工作日志 — my-website
 
-> 最后更新：2026-06-25
-> 当前阶段：自定义子话题标签功能 ✅ — 准备下一功能规划
+> 最后更新：2026-06-27
+> 当前阶段：Tauri v2 桌面客户端 ✅ — 修复建议面板 API 兼容
 >
 > 🌐 线上地址：https://my-website-two-fawn-12.vercel.app/
 > 📦 GitHub：https://github.com/Toblimer/my-website
@@ -71,7 +71,7 @@
 | 线上部署 | ✅ `my-website-two-fawn-12.vercel.app` |
 | 技术栈 | 纯 HTML/CSS/JS + Vercel Serverless Function |
 | 分支 | `main` |
-| 最新 Commit | `c5a3e35 📝 Phase 6 审查完成 + 更新工作日志` |
+| 最新 Commit | `b578422 🐛 修复 Tauri 客户端 suggest.js 的 API_BASE 不兼容问题` |
 | Claude Code | ✅ 已配置 `.claude/rules/` + `.claude/settings.json` |
 | Vercel 环境变量 | ✅ PEXELS_API_KEY, PIXABAY_API_KEY, DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL（全部已配置） |
 
@@ -91,6 +91,7 @@
 | 🏷 搜索建议标签（AI 生成子话题） | ✅ |
 | 🔀 交集/并集搜索模式 | ✅ |
 | ✏️ 标签编辑/自定义标签 | ✅ |
+| 🖥 Tauri v2 桌面客户端（路径 A） | ✅ |
 | 📊 高级筛选（颜色/尺寸/方向） | ⏳ |
 | 📝 搜索历史管理 | ⏳ |
 | ❤️ 用户收藏功能 | ⏳ |
@@ -173,7 +174,49 @@ App.getCombinedQuery() / App.hideSuggestPanel()
 
 部署：commit `ecdd758` + push
 
-### ⚠️ 工作流执行记录
+### 2026-06-27 · 会话 #5（Phase 7a：Tauri v2 桌面客户端）
+
+| # | 环节 | 产出 | 结论 |
+|---|------|------|------|
+| 规划 | 桌面版 Claude | 技术选型分析 + Agent Prompt（Tauri 路径 A） | — |
+| 开发 | Claude Code | package.json + src-tauri/（tauri.conf.json, Cargo.toml, lib.rs, main.rs, build.rs, capabilities, icons）+ assets/favicon.ico | 发现 1 项需修复 |
+| 审查 | 桌面版 Claude | 逐项检查配置 + 修复 Tauri CSP 兼容问题 | ✅ |
+
+审查发现并修复：
+| # | 问题 | 严重度 | 修复方案 |
+|---|------|:---:|------|
+| 1 | `api.js` 的 `API_BASE` 不识别 Tauri 空 host，导致 API 请求 404 | **关键** | 增加 `!host` 和 `host.startsWith('tauri.')` 的 fallback 到 Vercel 线上 URL |
+
+部署：commit `2fc39eb` + push
+
+⚠️ **待本机终端操作**（沙箱限制，无法在 Claude Code 内执行）：
+1. `winget install Rustlang.Rustup` — 安装 Rust
+2. `winget install Microsoft.VisualStudio.2022.BuildTools` — 安装 MSVC
+3. `cargo install tauri-cli --version "^2"` — 安装 Tauri CLI
+4. `pnpm install` — 安装 JS 依赖
+5. `pnpm tauri signer generate -w ~/.tauri/my-website.key` — 生成更新签名密钥
+6. 将公钥填入 `src-tauri/tauri.conf.json` → `plugins.updater.pubkey`
+7. `pnpm tauri dev` — 验证桌面窗口
+8. `pnpm tauri build` — 构建 Windows 安装包
+
+### 2026-06-27 · 会话 #6（Tauri 环境上线 + Bug 修复）
+
+| # | 环节 | 产出 | 结论 |
+|---|------|------|------|
+| 环境安装 | 用户 | Rust + MSVC + Tauri CLI + pnpm install + signer key 生成 | ✅ 客户端可启动 |
+| Bug 发现 | 用户 | 搜索框输入 → 建议面板显示"建议暂时不可用" | ❌ |
+| 定位 | 桌面版 Claude | `suggest.js` 也有独立的 `getApiBase()`，未被 Phase 7a 修复覆盖 | 根因确认 |
+| 修复 | 桌面版 Claude | `suggest.js` 的 `getApiBase()` 增加 Tauri host 兜底（与 `api.js` 一致） | ✅ |
+| 部署 | 桌面版 Claude | commit `b578422` + push | ✅ |
+
+审查发现并修复：
+| # | 问题 | 严重度 | 修复方案 |
+|---|------|:---:|------|
+| 1 | `suggest.js` 的 `API_BASE` 不识别 Tauri 空 host，搜索建议 API 请求 404 | **关键** | 增加 `!host` 和 `host.startsWith('tauri.')` 的 fallback 到 Vercel 线上 URL |
+
+> **经验教训**：Phase 7a 审查时只修复了 `api.js` 的 `API_BASE`，遗漏了 `suggest.js` 中也有一份**独立的** `getApiBase()`。下次审查 Tauri 兼容性时应该全局搜索所有 `fetch(` 调用和所有 `hostname` 判断，确保没有遗漏的 API 端点。
+
+部署：commit `b578422` + push
 
 | 日期 | 批次 | 是否遵循标准流程 | 备注 |
 |------|------|:---:|------|
@@ -182,6 +225,8 @@ App.getCombinedQuery() / App.hideSuggestPanel()
 | 06-25 | Phase 4 | ❌ | Claude 跳过了 Prompt 环节直接写代码 |
 | 06-25 | Phase 5 | ✅ | Claude 出 Prompt → OpenClaw 执行 → Claude 审查修复 → commit push |
 | 06-25 | Phase 6 | ✅ | 桌面版 Claude 出 Prompt → Claude Code 开发 → 桌面版 Claude 审查修复 → commit push |
+| 06-27 | Phase 7a | ✅ | 桌面版 Claude 出 Prompt → Claude Code 开发 → 桌面版 Claude 审查修复 → commit push |
+| 06-27 | Bug 修复 | ⏭️ 跳过 | suggest.js getApiBase() Tauri 兼容遗漏，Claude 直接修 |
 
 > **经验教训**：
 > - Phase 5：OpenClaw 产出的代码整体正确，但 2 处细节仍需人工审查发现。
@@ -192,5 +237,5 @@ App.getCombinedQuery() / App.hideSuggestPanel()
 
 ## 下一步
 
-- 规划下一功能（按标准流程：Claude 出 Prompt → Claude Code 开发 → Claude 审查）
-- 候选功能：高级筛选 / 搜索历史 / 收藏夹
+- Tauri 环境准备（本机终端）：安装 Rust + MSVC + pnpm install + 生成 signer key
+- 可选下一功能：高级筛选 / 搜索历史 / 收藏夹
