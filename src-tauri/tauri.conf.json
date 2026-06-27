@@ -1,10 +1,12 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "我的网站",
+  "productName": "My Website",
   "version": "1.0.0",
   "identifier": "com.tanrunzhe.my-website",
   "build": {
-    "frontendDist": "../"
+    "frontendDist": "../dist-tauri",
+    "beforeDevCommand": "pnpm run build:tauri-assets",
+    "beforeBuildCommand": "pnpm run build:tauri-assets"
   },
   "app": {
     "windows": [
@@ -26,7 +28,10 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["msi", "nsis"],
+    "targets": [
+      "msi",
+      "nsis"
+    ],
     "createUpdaterArtifacts": true,
     "icon": [
       "../assets/favicon.ico",
@@ -47,7 +52,7 @@
       "endpoints": [
         "https://github.com/Toblimer/my-website/releases/latest/download/latest.json"
       ],
-      "pubkey": "PLACEHOLDER_WILL_BE_REPLACED_AFTER_KEY_GENERATION"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQzNDE5OUYyNUI5QzYxQ0QKUldUTllaeGI4cGxCMDcvcTVjZlNDVlJFRkhXM2xteHcvZm9sQ1k5VjJVM2dUSGxHSDI4K1FxR0MK"
     }
   }
 }

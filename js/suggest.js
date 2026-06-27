@@ -17,7 +17,8 @@
   // 获取 API 基础 URL
   function getApiBase() {
     var host = window.location.hostname;
-    if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.')) {
+    // 本地开发（localhost / 127.0.0.1 / 192.168.x.x）或 Tauri（tauri.localhost / 空 host）都用 Vercel 生产 URL
+    if (!host || host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('tauri.')) {
       return 'https://my-website-two-fawn-12.vercel.app';
     }
     return '';
